@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AgriGuard AI{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-white mb-1">Farmer Dashboard</h2>
+        <p class="text-secondary small">Real-time monitoring of crop health, localized weather metrics, and advisory logs</p>
+    </div>
+</div>
+
+<!-- TOP GRID STATUS CARDS -->
+<div class="row g-4 mb-4">
+    <!-- Total Scans -->
+    <div class="col-md-3">
+        <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-muted small fw-semibold d-block mb-1">Total Crop Scans</span>
+                <h3 class="fw-bold text-white mb-0">{{ total_preds }}</h3>
+            </div>
+            <div class="rounded-circle bg-success-translucent text-success p-3">
+                <i class="fa-solid fa-microscope fs-4"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Healthy Crops -->
+    <div class="col-md-3">
+        <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-muted small fw-semibold d-block mb-1">Healthy Crops Detected</span>
+                <h3 class="fw-bold text-white mb-0">{{ healthy_preds }}</h3>
+            </div>
+            <div class="rounded-circle bg-success-translucent text-success p-3">
+                <i class="fa-solid fa-seedling fs-4 animate-pulse"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Diseases Detected -->
+    <div class="col-md-3">
+        <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-muted small fw-semibold d-block mb-1">Diseases Detected</span>
+                <h3 class="fw-bold text-white mb-0">{{ disease_preds }}</h3>
+            </div>
+            <div class="rounded-circle bg-danger-translucent text-danger p-3">
+                <i class="fa-solid fa-bug fs-4"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preferred Language -->
+    <div class="col-md-3">
+        <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-muted small fw-semibold d-block mb-1">Preferred Language</span>
+                <h4 class="fw-bold text-white mb-0">
+                    {% if g.user.preferred_language == 'te' %}Telugu (తెలుగు)
+                    {% elif g.user.preferred_language == 'hi' %}Hindi (हिन्दी)
+                    {% elif g.user.preferred_language == 'ta' %}Tamil (தமிழ்)
+                    {% elif g.user.preferred_language == 'kn' %}Kannada (ಕನ್ನಡ)
+                    {% elif g.user.preferred_language == 'ml' %}Malayalam (മലയാളം)
+                    {% else %}English
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="rounded-circle bg-info-translucent text-info p-3">
+                <i class="fa-solid fa-language fs-4"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WEATHER & RISK MODULE -->
+<div class="row g-4 mb-4">
+    <!-- Weather Widget -->
+    <div class="col-lg-7">
+        <div class="glass-card p-4 h-100 weather-panel-glow border-success">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-translucent pb-3">
+                <h4 class="fw-bold text-white mb-0">
+                    <i class="fa-solid fa-cloud-sun text-warning me-2 animate-pulse"></i> Local Weather Forecast
+                </h4>
+                <span id="weather-city" class="text-success fw-bold">Detecting Location...</span>
+            </div>
+            
+            <!-- Loading Skeletons -->
+            <div class="weather-skeleton">
+                <div class="row g-3">
+                    <div class="col-6"><div class="skeleton-box" style="height: 50px;"></div></div>
+                    <div class="col-6"><div class="skeleton-box" style="height: 50px;"></div></div>
+                    <div class="col-12"><div class="skeleton-box" style="height: 30px;"></div></div>
+                </div>
+            </div>
+            
+            <!-- Live Weather Content -->
+            <div class="weather-content d-none">
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-sm-6 text-center text-sm-start">
+                        <div class="d-flex align-items-center justify-content-center justify-content-sm-start">
+                            <h1 class="display-3 fw-extrabold text-white mb-0" id="weather-temp">32°C</h1>
+                            <div class="ms-3">
+                                <span class="badge bg-success mb-1" id="weather-status">Sunny</span>
+                                <div class="text-muted small">UV Index: <span id="weather-uv" class="fw-semibold text-white">7/10</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="row text-center g-2">
+                            <div class="col-4">
+                                <small class="text-muted d-block fs-xs">Humidity</small>
+                                <span class="fw-bold" id="weather-humidity">64%</span>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block fs-xs">Wind</small>
+                                <span class="fw-bold" id="weather-wind">12 km/h</span>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block fs-xs">Rain</small>
+                                <span class="fw-bold" id="weather-rain">0.0 mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Weather Alerts & AI Recommendations -->
+                <div class="bg-light-translucent border border-translucent rounded p-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-secondary small fw-bold"><i class="fa-solid fa-robot text-success me-1"></i> AI Weather & Spraying Advisory</span>
+                        <button type="button" class="btn btn-outline-success btn-xs py-1 px-2 rounded-pill disabled" id="weather-audio-play">
+                            <i class="fa-solid fa-volume-high me-1"></i> Listen
+                        </button>
+                    </div>
+                    <ul class="list-group list-group-flush" id="weather-advisory-list">
+                        <!-- Loaded dynamically -->
+                    </ul>
+                </div>
+                
+                <!-- 7-Day Forecast Grid -->
+                <h6 class="text-white fw-bold mb-2">7-Day Forecast</h6>
+                <div class="row g-2 text-center" id="forecast-days-container">
+                    <!-- Forecast cols loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Scan / Upload Area -->
+    <div class="col-lg-5">
+        <div class="glass-card p-4 h-100 border-success">
+            <h4 class="fw-bold text-white mb-3 border-bottom border-translucent pb-3">
+                <i class="fa-solid fa-qrcode text-success me-2"></i> Quick Crop Scan
+            </h4>
+            <p class="text-muted small mb-4">Upload a crop leaf image to detect diseases instantly and retrieve advisory recommendations.</p>
+            
+            <div class="text-center py-4 border border-dashed border-secondary rounded bg-light-translucent mb-4" id="upload-interactive-area" style="cursor: pointer;">
+                <i class="fa-solid fa-cloud-arrow-up text-success fs-1 mb-2 animate-pulse"></i>
+                <div class="fw-bold text-white">Drag & Drop Image</div>
+                <small class="text-muted">or click to browse local files</small>
+                <form action="{{ url_for('detect_disease') }}" method="POST" enctype="multipart/form-data" class="d-none">
+                    <input type="file" name="image" id="quick-scan-file" accept="image/*">
+                </form>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('disease_detection') }}" class="btn btn-success py-2.5 rounded-pill fw-semibold btn-glow-success">
+                    Open Disease Scanner <i class="fa-solid fa-microscope ms-1"></i>
+                </a>
+                <a href="{{ url_for('fertilizer_recommender') }}" class="btn btn-outline-light py-2.5 rounded-pill fw-semibold">
+                    Fertilizer Recommender <i class="fa-solid fa-flask ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHARTS AND RECENT ACTIVITY -->
+<div class="row g-4">
+    <!-- Weather Charts -->
+    <div class="col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-white mb-3">Live Weather Trends</h5>
+            <div style="height: 250px; position: relative;">
+                <canvas id="weather-temp-chart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Crop Analytics -->
+    <div class="col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-white mb-3">Crop Scan Analytics</h5>
+            <div style="height: 250px; position: relative;">
+                <canvas id="crop-distribution-chart" 
+                        data-tomato="{{ crop_counts.get('Tomato', 0) }}" 
+                        data-potato="{{ crop_counts.get('Potato', 0) }}" 
+                        data-corn="{{ crop_counts.get('Corn', 0) }}" 
+                        data-rice="{{ crop_counts.get('Rice', 0) }}"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-white mb-3">Recent Scans</h5>
+            <div class="list-group list-group-flush gap-2 overflow-y-auto" style="max-height: 250px;">
+                {% if recent_predictions %}
+                    {% for pred in recent_predictions %}
+                    <div class="list-group-item bg-light-translucent border border-translucent rounded p-2.5 d-flex align-items-center gap-3">
+                        <div class="scan-img border border-translucent rounded overflow-hidden" style="width: 50px; height: 50px;">
+                            <img src="/static/{{ pred.image_path }}" class="w-100 h-100 object-fit-cover" onerror="this.src='/static/css/images/leaf.png'">
+                        </div>
+                        <div class="scan-details overflow-hidden flex-grow-1">
+                            <span class="fw-bold text-white text-truncate d-block small">{{ pred.disease_name }}</span>
+                            <small class="text-muted d-block fs-xs">{{ pred.created_at.strftime('%d-%b, %I:%M %p') }}</small>
+                        </div>
+                        <div>
+                            <span class="badge {% if 'Healthy' in pred.disease_name %}bg-success{% else %}bg-danger{% endif %} text-uppercase fs-xs">
+                                {{ pred.severity.split(' ')[0] }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5 text-muted small">
+                        <i class="fa-solid fa-hourglass-empty fs-3 mb-2"></i>
+                        <div>No recent scans found.</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick scan file trigger scripts -->
+<script>
+document.getElementById('upload-interactive-area').addEventListener('click', () => {
+    document.getElementById('quick-scan-file').click();
+});
+document.getElementById('quick-scan-file').addEventListener('change', function() {
+    if(this.files && this.files[0]) {
+        // Redirect user to disease detection with file selected, or trigger scan
+        const formData = new FormData();
+        formData.append('image', this.files[0]);
+        formData.append('crop_type', 'Tomato');
+        
+        // Show scanning state or auto submit
+        const header = document.getElementById('upload-interactive-area').querySelector('.fw-bold');
+        header.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-success me-2"></i> Analyzing Image...';
+        
+        fetch('/detect-disease', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) {
+                alert("Scan failed: " + data.error);
+                header.innerText = 'Drag & Drop Image';
+            } else {
+                // Redirect to scanning page, showing results
+                window.location.href = "{{ url_for('disease_detection') }}?auto_result=" + data.id;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error running quick scan.");
+            header.innerText = 'Drag & Drop Image';
+        });
+    }
+});
+</script>
+
+<!-- Injects dashboard variables -->
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

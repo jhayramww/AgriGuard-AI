@@ -1,0 +1,558 @@
+/* --- AGRI-GUARD AI DESIGN SYSTEM --- */
+
+:root {
+    --transition-speed: 0.3s;
+    --border-radius-sm: 8px;
+    --border-radius-md: 16px;
+    --border-radius-lg: 24px;
+    
+    /* Dark Mode Defaults */
+    --bg-app: #090e09;
+    --bg-content: #0d150d;
+    --card-bg: rgba(18, 28, 18, 0.7);
+    --card-border: rgba(46, 125, 50, 0.2);
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    --text-primary: #e8f5e9;
+    --text-secondary: #a5d6a7;
+    --text-muted: #81c784;
+    
+    --success: #2e7d32;
+    --success-hover: #1b5e20;
+    --success-light: rgba(46, 125, 50, 0.2);
+    --success-glow: 0 0 15px rgba(76, 175, 80, 0.3);
+    
+    --danger: #d32f2f;
+    --warning: #f57c00;
+    --info: #0288d1;
+    
+    --border-translucent: rgba(255, 255, 255, 0.08);
+    --bg-light-translucent: rgba(255, 255, 255, 0.03);
+}
+
+[data-bs-theme="light"] {
+    --bg-app: #f4f9f4;
+    --bg-content: #ffffff;
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --card-border: rgba(46, 125, 50, 0.15);
+    --card-shadow: 0 8px 32px 0 rgba(46, 125, 50, 0.08);
+    
+    --text-primary: #1b301b;
+    --text-secondary: #2e5c2e;
+    --text-muted: #4e804e;
+    
+    --success: #388e3c;
+    --success-hover: #2e7d32;
+    --success-light: rgba(56, 142, 60, 0.1);
+    --success-glow: 0 0 15px rgba(56, 142, 60, 0.2);
+    
+    --border-translucent: rgba(0, 0, 0, 0.08);
+    --bg-light-translucent: rgba(0, 0, 0, 0.02);
+}
+
+/* Base resets */
+* {
+    font-family: 'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* App Container Layout */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+/* Sidebar Layout */
+.app-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: transform var(--transition-speed) ease;
+}
+
+.sidebar-nav .nav-link {
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-sm);
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.sidebar-nav .nav-link:hover, 
+.sidebar-nav .nav-link.active {
+    background-color: var(--success);
+    color: #ffffff;
+    box-shadow: var(--success-glow);
+}
+
+/* Main Viewport */
+.main-viewport {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--bg-content);
+}
+
+.app-header {
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.content-body {
+    padding: 2rem;
+    background-color: var(--bg-app);
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--card-shadow);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow var(--transition-speed) ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(46, 125, 50, 0.15);
+    border-color: var(--success);
+}
+
+/* Micro-Animations & Icons */
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-spin-slow {
+    animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Floating Voice Assistant Widget Styles */
+.chat-widget-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1050;
+}
+
+.chat-widget-toggle {
+    width: 60px;
+    height: 60px;
+    border: none;
+    outline: none;
+    position: relative;
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+    transition: transform 0.2s ease;
+}
+
+.chat-widget-toggle:hover {
+    transform: scale(1.08);
+}
+
+.chat-widget-box {
+    position: absolute;
+    bottom: 72px;
+    right: 0;
+    width: 350px;
+    height: 480px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border) !important;
+    border-radius: var(--border-radius-md) !important;
+}
+
+.chat-messages-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+}
+
+/* Chat bubble aesthetics */
+.chat-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: var(--border-radius-md);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.bot-bubble {
+    background: var(--bg-light-translucent);
+    color: var(--text-primary);
+    border: 1px solid var(--border-translucent);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.user-bubble {
+    background: var(--success);
+    color: #ffffff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    box-shadow: var(--success-glow);
+}
+
+/* Voice wave animation */
+.voice-wave {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    height: 30px;
+}
+
+.voice-wave .bar {
+    width: 3px;
+    height: 6px;
+    background-color: var(--success);
+    border-radius: 3px;
+    animation: soundWave 1.2s infinite ease-in-out;
+}
+
+.voice-wave .bar:nth-child(1) { animation-delay: 0.1s; }
+.voice-wave .bar:nth-child(2) { animation-delay: 0.2s; }
+.voice-wave .bar:nth-child(3) { animation-delay: 0.3s; }
+.voice-wave .bar:nth-child(4) { animation-delay: 0.4s; }
+.voice-wave .bar:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes soundWave {
+    0%, 100% { height: 6px; }
+    50% { height: 26px; }
+}
+
+/* Loading Skeletons */
+.skeleton-box {
+    background: linear-gradient(90deg, var(--bg-light-translucent) 25%, var(--card-border) 50%, var(--bg-light-translucent) 75%);
+    background-size: 200% 100%;
+    animation: loading-skeleton 1.5s infinite;
+    border-radius: 4px;
+    height: 18px;
+    width: 100%;
+}
+
+@keyframes loading-skeleton {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Skeletons Layouts */
+.skeleton-card {
+    height: 120px;
+    margin-bottom: 12px;
+}
+
+/* Dashboard Weather Card Style */
+.weather-panel-glow {
+    position: relative;
+}
+.weather-panel-glow::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    background: linear-gradient(135deg, #ffa726, #4caf50);
+    z-index: -1;
+    border-radius: inherit;
+    filter: blur(12px);
+    opacity: 0.15;
+}
+
+/* Print-ready report styles */
+@media print {
+    body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    .app-sidebar, .app-header, .chat-widget-container, .btn, footer {
+        display: none !important;
+    }
+    .main-viewport {
+        height: auto !important;
+        overflow: visible !important;
+        background-color: #ffffff !important;
+    }
+    .content-body {
+        padding: 0 !important;
+    }
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--card-border);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--success);
+}
+
+/* Responsive configurations */
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+    }
+    .app-sidebar.show-sidebar {
+        transform: translateX(0);
+    }
+}
+
+/* Glowing buttons */
+.btn-glow-success {
+    box-shadow: 0 0 10px rgba(46, 125, 50, 0.2);
+    transition: box-shadow 0.3s ease;
+}
+.btn-glow-success:hover {
+    box-shadow: 0 0 20px rgba(46, 125, 50, 0.5);
+}
+
+/* Pulse ring around floating widget */
+.pulse-ring {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--success);
+    animation: ringPulse 2s infinite ease-out;
+}
+
+@keyframes ringPulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 0.3; }
+    100% { transform: scale(1.35); opacity: 0; }
+}
+
+/* --- CHATBOT PAGE SPECIFIC REDESIGN STYLES --- */
+
+.chatbot-layout-wrapper {
+    background-color: var(--bg-app);
+}
+
+.chat-main-container {
+    background-color: var(--bg-content);
+    transition: margin-right var(--transition-speed) ease;
+}
+
+.chat-top-header {
+    height: 60px;
+    z-index: 5;
+}
+
+.chat-viewport {
+    scroll-behavior: smooth;
+}
+
+.chat-message-row {
+    margin-bottom: 8px;
+    animation: fadeInBubble 0.3s ease-out;
+}
+
+@keyframes fadeInBubble {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-bubble {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.user-bubble {
+    border-bottom-right-radius: 4px !important;
+}
+
+.bot-bubble {
+    border-bottom-left-radius: 4px !important;
+}
+
+.bubble-actions .btn-link {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.bubble-actions .btn-link:hover {
+    color: var(--text-secondary);
+}
+
+/* Chat Input Sticky Footer */
+.chat-input-sticky-footer {
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, var(--bg-app) 25%);
+    z-index: 4;
+}
+
+.chat-input-bar {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
+}
+
+.chat-input-bar textarea {
+    font-family: inherit;
+}
+
+.chat-input-bar textarea:focus {
+    outline: none;
+}
+
+/* Shortcuts Scroller */
+.chat-shortcuts-scroller {
+    scrollbar-width: none; /* Firefox */
+}
+.chat-shortcuts-scroller::-webkit-scrollbar {
+    display: none; /* Safari/Chrome */
+}
+
+.chat-shortcuts-scroller .btn-dark-translucent {
+    border: 1px solid var(--border-translucent);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.chat-shortcuts-scroller .btn-dark-translucent:hover {
+    background-color: var(--success-light);
+    color: #ffffff;
+    border-color: var(--success);
+}
+
+/* Right Sidebar panel */
+.chat-right-sidebar {
+    transform: translateX(100%);
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.chat-right-sidebar.active-sidebar {
+    transform: translateX(0);
+    position: relative;
+}
+
+/* Accordion item styling */
+.accordion-item-glass {
+    background-color: var(--bg-light-translucent);
+    border: 1px solid var(--border-translucent);
+}
+
+.accordion-header-btn {
+    border: none;
+    outline: none;
+    transition: background-color 0.2s ease;
+}
+
+.accordion-header-btn:hover {
+    background-color: var(--card-border);
+}
+
+.accordion-header-btn.active-header .transition-arrow {
+    transform: rotate(180deg);
+}
+
+.transition-arrow {
+    transition: transform var(--transition-speed) ease;
+}
+
+.accordion-content-panel {
+    transition: max-height var(--transition-speed) ease, padding var(--transition-speed) ease;
+}
+
+.accordion-content-panel.d-none {
+    display: none !important;
+}
+
+.max-height-200 {
+    max-height: 200px;
+}
+
+.accent-success {
+    accent-color: var(--success);
+}
+
+.no-scrollbar {
+    scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.fs-xxs {
+    font-size: 0.7rem;
+}
+.fs-xs {
+    font-size: 0.8rem;
+}
+
+/* Responsive configurations for Chatbot view */
+@media (max-width: 991.98px) {
+    .chat-right-sidebar {
+        position: fixed !important;
+        right: 0;
+        top: 60px;
+        bottom: 0;
+        transform: translateX(100%);
+        box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+    }
+    .chat-right-sidebar.active-sidebar {
+        transform: translateX(0);
+    }
+}
+

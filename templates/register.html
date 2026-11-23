@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Register - AgriGuard AI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center py-5" style="min-height: 90vh;">
+    <div class="col-md-6 col-lg-5">
+        <div class="glass-card p-4 border-success">
+            
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-leaf text-success fs-1 animate-pulse mb-2"></i>
+                <h2 class="fw-bold text-white mb-1">Create Farmer Account</h2>
+                <p class="text-muted small">Register to diagnose crop health and get voice advisories</p>
+            </div>
+            
+            {% if error %}
+            <div class="alert alert-danger-translucent border border-danger-translucent text-danger rounded p-3 mb-3 d-flex align-items-center">
+                <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
+                <div>{{ error }}</div>
+            </div>
+            {% endif %}
+            
+            <form action="{{ url_for('register') }}" method="POST">
+                
+                <div class="form-floating mb-3">
+                    <input type="text" name="username" class="form-control bg-light-translucent border-translucent text-white" id="regUsername" placeholder="username" required>
+                    <label for="regUsername" class="text-secondary">Username</label>
+                </div>
+                
+                <div class="form-floating mb-3">
+                    <input type="email" name="email" class="form-control bg-light-translucent border-translucent text-white" id="regEmail" placeholder="email@address.com" required>
+                    <label for="regEmail" class="text-secondary">Email Address</label>
+                </div>
+                
+                <div class="form-floating mb-3">
+                    <input type="password" name="password" class="form-control bg-light-translucent border-translucent text-white" id="regPassword" placeholder="Password" minlength="6" required>
+                    <label for="regPassword" class="text-secondary">Password (Min. 6 chars)</label>
+                </div>
+                
+                <div class="form-floating mb-3">
+                    <input type="tel" name="phone" class="form-control bg-light-translucent border-translucent text-white" id="regPhone" placeholder="9999999999" required>
+                    <label for="regPhone" class="text-secondary">Phone Number</label>
+                </div>
+                
+                <div class="form-floating mb-3">
+                    <input type="text" name="farm_location" class="form-control bg-light-translucent border-translucent text-white" id="regLocation" placeholder="Guntur, Andhra Pradesh">
+                    <label for="regLocation" class="text-secondary">Farm Location (City, State)</label>
+                </div>
+                
+                <div class="form-floating mb-4">
+                    <select name="preferred_language" class="form-select bg-light-translucent border-translucent text-white" id="regLang" required>
+                        <option value="en" class="bg-dark">English</option>
+                        <option value="te" class="bg-dark">Telugu (తెలుగు)</option>
+                        <option value="hi" class="bg-dark">Hindi (हिन्दी)</option>
+                        <option value="ta" class="bg-dark">Tamil (தமிழ்)</option>
+                        <option value="kn" class="bg-dark">Kannada (ಕನ್ನಡ)</option>
+                        <option value="ml" class="bg-dark">Malayalam (മലയാളം)</option>
+                    </select>
+                    <label for="regLang" class="text-secondary">Preferred Language</label>
+                </div>
+                
+                <button type="submit" class="btn btn-success w-100 py-3 rounded-pill fw-semibold btn-glow-success mb-3">
+                    Sign Up <i class="fa-solid fa-user-plus ms-1"></i>
+                </button>
+                
+            </form>
+            
+            <div class="text-center">
+                <span class="text-secondary small">Already have an account?</span> 
+                <a href="{{ url_for('login') }}" class="text-success fw-bold small text-decoration-none ms-1">Log In Here</a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

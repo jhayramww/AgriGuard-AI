@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Nearby Shops - AgriGuard AI{% endblock %}
+
+{% block head %}
+{% if maps_api_key %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&callback=initMap" async defer></script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-white mb-1">Nearby Seed & Fertilizer Dealers</h2>
+        <p class="text-secondary small">Identify and navigate to offline seed dealers, chemical stores, and government agriculture offices near your location</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Map Container -->
+    <div class="col-lg-7">
+        <div class="glass-card p-2 border-success overflow-hidden" style="height: 480px;">
+            <div id="map" class="w-100 h-100 rounded" style="background-color: var(--bg-app); min-height: 400px;">
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center px-4">
+                    <i class="fa-solid fa-map-location-dot text-success display-1 mb-3 animate-pulse"></i>
+                    <h5 class="text-white fw-bold">GPS Geolocation Mapping</h5>
+                    <p class="text-muted small max-width-400">
+                        {% if not maps_api_key %}
+                        Google Maps API key is not configured in settings. You can set it in your Profile. Displaying offline store lists and directions navigation buttons.
+                        {% else %}
+                        Fetching coordinates to render map markers. Please allow browser location access...
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Shops List Panel -->
+    <div class="col-lg-5">
+        <div class="glass-card p-4 h-100 border-success d-flex flex-column" style="max-height: 480px;">
+            <h5 class="fw-bold text-white mb-3 border-bottom border-translucent pb-3">
+                <i class="fa-solid fa-list-check text-success me-2"></i> Store Listings
+            </h5>
+            
+            <div id="shops-loader" class="text-center py-5">
+                <i class="fa-solid fa-spinner fa-spin text-success fs-1 mb-2"></i>
+                <div class="small text-muted">Locating nearby dealers...</div>
+            </div>
+            
+            <div id="shops-list" class="flex-grow-1 overflow-y-auto d-none gap-2">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Geolocation and Map Markers Binding -->
+<script>
+let map;
+let markers = [];
+
+function initMap(lat, lng) {
+    const coords = { lat: lat, lng: lng };
+    map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 13,
+        center: coords,
+        styles: [
+            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+        ]
+    });
+    
+    // Add current location marker
+    new google.maps.Marker({
+        position: coords,
+        map: map,
+        title: "Your Location",
+        icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const loader = document.getElementById('shops-loader');
+    const shopsList = document.getElementById('shops-list');
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => loadShops(pos.coords.latitude, pos.coords.longitude),
+            () => loadShops(16.3067, 80.4365) // Guntur AP fallback
+        );
+    } else {
+        loadShops(16.3067, 80.4365);
+    }
+    
+    function loadShops(lat, lng) {
+        // Initialize Google Map if API key is active
+        if (typeof google !== 'undefined' && google.maps) {
+            initMap(lat, lng);
+        }
+        
+        // Fetch offline store listings from API
+        fetch('/get-nearby-shops', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ latitude: lat, longitude: lng })
+        })
+        .then(res => res.json())
+        .then(data => {
+            loader.classList.add('d-none');
+            shopsList.innerHTML = '';
+            
+            data.shops.forEach((shop, index) => {
+                // Add marker to map
+                if (map) {
+                    const marker = new google.maps.Marker({
+                        position: { lat: shop.latitude, lng: shop.longitude },
+                        map: map,
+                        title: shop.name
+                    });
+                    
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `<div class="p-2 text-dark"><h6 class="fw-bold mb-1">${shop.name}</h6><p class="small text-muted mb-0">${shop.address}</p></div>`
+                    });
+                    
+                    marker.addListener("click", () => {
+                        infoWindow.open(map, marker);
+                    });
+                    
+                    markers.push(marker);
+                }
+                
+                // Add card entry in lists
+                const item = document.createElement('div');
+                item.className = 'list-group-item bg-light-translucent border border-translucent rounded p-3 mb-2 d-flex justify-content-between align-items-start gap-2';
+                item.innerHTML = `
+                    <div class="overflow-hidden flex-grow-1">
+                        <span class="badge bg-success-translucent text-success border border-success-translucent mb-1.5 fs-xs">${shop.type}</span>
+                        <h6 class="fw-bold text-white mb-1 fs-6">${shop.name}</h6>
+                        <small class="text-muted d-block mb-1"><i class="fa-solid fa-location-dot text-danger me-1"></i> ${shop.address}</small>
+                        <small class="text-muted d-block"><i class="fa-solid fa-phone text-success me-1"></i> ${shop.phone}</small>
+                    </div>
+                    <a href="${shop.directions_url}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill align-self-center py-2 text-nowrap">
+                        <i class="fa-solid fa-diamond-turn-right me-1"></i> Navigate
+                    </a>
+                `;
+                shopsList.appendChild(item);
+            });
+            
+            shopsList.classList.remove('d-none');
+            shopsList.classList.add('d-flex');
+            shopsList.classList.add('flex-column');
+        })
+        .catch(err => {
+            console.error(err);
+            loader.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-danger fs-1 mb-2"></i><div class="small">Failed to load shops.</div>';
+        });
+    }
+});
+</script>
+{% endblock %}

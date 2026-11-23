@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}Fertilizer - AgriGuard AI{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-white mb-1">AI Fertilizer Recommendation</h2>
+        <p class="text-secondary small">Determine the most suitable fertilizer dose based on soil chemistry, moisture, and localized climate data</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Input Parameters Form -->
+    <div class="col-lg-5">
+        <div class="glass-card p-4 border-success h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0"><i class="fa-solid fa-flask text-success me-2"></i> Soil & Crop Inputs</h5>
+                <button type="button" class="btn btn-outline-success btn-xs px-2.5 py-1 rounded-pill" id="fetch-weather-metrics-btn">
+                    <i class="fa-solid fa-cloud-sun me-1"></i> Auto Weather
+                </button>
+            </div>
+            
+            <form id="fertilizer-recommendation-form">
+                
+                <div class="row g-3 mb-3">
+                    <!-- Temperature -->
+                    <div class="col-6">
+                        <label class="form-label text-secondary small fw-bold">Temperature (°C)</label>
+                        <input type="number" name="temperature" id="fert-temp" class="form-control bg-light-translucent border-translucent text-white" value="30" min="10" max="50" required>
+                    </div>
+                    <!-- Humidity -->
+                    <div class="col-6">
+                        <label class="form-label text-secondary small fw-bold">Humidity (%)</label>
+                        <input type="number" name="humidity" id="fert-humidity" class="form-control bg-light-translucent border-translucent text-white" value="65" min="10" max="100" required>
+                    </div>
+                </div>
+                
+                <div class="row g-3 mb-3">
+                    <!-- Moisture -->
+                    <div class="col-6">
+                        <label class="form-label text-secondary small fw-bold">Soil Moisture (%)</label>
+                        <input type="number" name="moisture" id="fert-moisture" class="form-control bg-light-translucent border-translucent text-white" value="45" min="0" max="100" required>
+                    </div>
+                    <!-- Soil Type -->
+                    <div class="col-6">
+                        <label class="form-label text-secondary small fw-bold">Soil Type</label>
+                        <select name="soil_type" class="form-select bg-light-translucent border-translucent text-white" required>
+                            <option value="Red" class="bg-dark">Red Soil</option>
+                            <option value="Black" class="bg-dark">Black Soil</option>
+                            <option value="Sandy" class="bg-dark">Sandy Soil</option>
+                            <option value="Loamy" class="bg-dark" selected>Loamy Soil</option>
+                            <option value="Clayey" class="bg-dark">Clayey Soil</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Crop Type -->
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-bold">Target Crop Type</label>
+                    <select name="crop_type" class="form-select bg-light-translucent border-translucent text-white" required>
+                        <option value="Paddy" class="bg-dark" selected>Paddy (Rice)</option>
+                        <option value="Wheat" class="bg-dark">Wheat</option>
+                        <option value="Maize" class="bg-dark">Maize</option>
+                        <option value="Cotton" class="bg-dark">Cotton</option>
+                        <option value="Sugarcane" class="bg-dark">Sugarcane</option>
+                        <option value="Ground Nuts" class="bg-dark">Ground Nuts</option>
+                        <option value="Tobacco" class="bg-dark">Tobacco</option>
+                        <option value="Barley" class="bg-dark">Barley</option>
+                        <option value="Millets" class="bg-dark">Millets</option>
+                        <option value="Pulses" class="bg-dark">Pulses</option>
+                        <option value="Oil seeds" class="bg-dark">Oil Seeds</option>
+                    </select>
+                </div>
+                
+                <hr class="border-secondary opacity-10 my-3">
+                
+                <!-- NPK Values -->
+                <label class="form-label text-secondary small fw-bold d-block mb-2"><i class="fa-solid fa-chart-bar text-success me-1"></i> Soil N-P-K Content (mg/kg)</label>
+                <div class="row g-2 mb-4">
+                    <!-- Nitrogen -->
+                    <div class="col-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-success text-white border-0">N</span>
+                            <input type="number" name="nitrogen" class="form-control bg-light-translucent border-translucent text-white" value="35" min="0" max="150" required>
+                        </div>
+                    </div>
+                    <!-- Phosphorus -->
+                    <div class="col-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-primary text-white border-0">P</span>
+                            <input type="number" name="phosphorus" class="form-control bg-light-translucent border-translucent text-white" value="28" min="0" max="150" required>
+                        </div>
+                    </div>
+                    <!-- Potassium -->
+                    <div class="col-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-warning text-dark border-0">K</span>
+                            <input type="number" name="potassium" class="form-control bg-light-translucent border-translucent text-white" value="22" min="0" max="150" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success w-100 py-3 rounded-pill fw-semibold btn-glow-success" id="predict-fert-btn">
+                    Predict Optimal Fertilizer <i class="fa-solid fa-wand-magic-sparkles ms-1"></i>
+                </button>
+                
+            </form>
+        </div>
+    </div>
+    
+    <!-- Predictions Display Area -->
+    <div class="col-lg-7">
+        <!-- Loader Screen -->
+        <div id="fert-loader" class="glass-card p-4 h-100 d-none text-center d-flex flex-column justify-content-center align-items-center">
+            <i class="fa-solid fa-flask fa-spin text-success fs-1 mb-3"></i>
+            <h4 class="fw-bold text-white mb-2">Analyzing Soil Chemistry...</h4>
+            <p class="text-secondary small">Evaluating Nitrogen-Phosphorus-Potassium values against crop templates</p>
+        </div>
+        
+        <!-- Welcome Screen -->
+        <div id="fert-welcome" class="glass-card p-5 h-100 text-center d-flex flex-column justify-content-center align-items-center">
+            <i class="fa-solid fa-leaf text-success animate-pulse mb-3" style="font-size: 70px !important;"></i>
+            <h3 class="fw-bold text-white mb-2">Fertilizer Report</h3>
+            <p class="text-secondary max-width-400 mx-auto">Fill in the NPK metrics and click "Predict Optimal Fertilizer" to view application methods, dosages and precautions.</p>
+        </div>
+        
+        <!-- Results Report -->
+        <div id="fert-results" class="glass-card p-4 h-100 d-none">
+            <div class="d-flex justify-content-between align-items-start border-bottom border-translucent pb-3 mb-4 flex-wrap gap-2">
+                <div>
+                    <small class="text-muted d-block fs-xs text-uppercase fw-bold">RECOMMENDED FERTILIZER</small>
+                    <h3 class="fw-extrabold text-white mb-0" id="result-fert-name">NPK 14-35-14</h3>
+                </div>
+                <button type="button" class="btn btn-outline-success btn-sm rounded-pill py-2 px-3" id="fert-voice-btn">
+                    <i class="fa-solid fa-volume-high me-1"></i> Listen Directions
+                </button>
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <!-- Method -->
+                <div class="col-md-6">
+                    <div class="card border-translucent bg-light-translucent p-3 h-100">
+                        <small class="text-secondary fw-bold mb-1"><i class="fa-solid fa-hand-holding-hand text-success me-1"></i> Application Method</small>
+                        <p class="text-white small mb-0" id="result-method"></p>
+                    </div>
+                </div>
+                <!-- Dosage -->
+                <div class="col-md-6">
+                    <div class="card border-translucent bg-light-translucent p-3 h-100">
+                        <small class="text-secondary fw-bold mb-1"><i class="fa-solid fa-weight-hanging text-info me-1"></i> Required Dosage</small>
+                        <p class="text-white small mb-0" id="result-dosage"></p>
+                    </div>
+                </div>
+                <!-- Frequency -->
+                <div class="col-md-6">
+                    <div class="card border-translucent bg-light-translucent p-3 h-100">
+                        <small class="text-secondary fw-bold mb-1"><i class="fa-solid fa-calendar-days text-warning me-1"></i> Frequency</small>
+                        <p class="text-white small mb-0" id="result-frequency"></p>
+                    </div>
+                </div>
+                <!-- Precautions -->
+                <div class="col-md-6">
+                    <div class="card border-translucent bg-light-translucent p-3 h-100">
+                        <small class="text-secondary fw-bold mb-1"><i class="fa-solid fa-shield-halved text-danger me-1"></i> Precautions & Cautions</small>
+                        <p class="text-white small mb-0" id="result-precautions"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Online Purchase Recommendations -->
+            <h6 class="text-white fw-bold mb-2">Purchase Recommendations</h6>
+            <div class="row g-2" id="fert-products-list">
+                <!-- Dynamic shop recommendations -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AJAX Submission and Weather fetch -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('fertilizer-recommendation-form');
+    const autoWeatherBtn = document.getElementById('fetch-weather-metrics-btn');
+    const tempInput = document.getElementById('fert-temp');
+    const humidityInput = document.getElementById('fert-humidity');
+    
+    const welcomeBox = document.getElementById('fert-welcome');
+    const loaderBox = document.getElementById('fert-loader');
+    const resultsBox = document.getElementById('fert-results');
+    const voiceBtn = document.getElementById('fert-voice-btn');
+    
+    // Auto weather populator
+    autoWeatherBtn.addEventListener('click', function() {
+        autoWeatherBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Fetching...';
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    fetch(`/get-weather`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ latitude: position.coords.latitude, longitude: position.coords.longitude })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        tempInput.value = data.temp;
+                        humidityInput.value = data.humidity;
+                        autoWeatherBtn.innerHTML = '<i class="fa-solid fa-check text-success me-1"></i> Loaded';
+                        setTimeout(() => {
+                            autoWeatherBtn.innerHTML = '<i class="fa-solid fa-cloud-sun me-1"></i> Auto Weather';
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        autoWeatherBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Failed';
+                    });
+                },
+                function() {
+                    autoWeatherBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Location Err';
+                }
+            );
+        } else {
+            autoWeatherBtn.innerHTML = '<i class="fa-solid fa-circle-xmark text-danger me-1"></i> No Support';
+        }
+    });
+    
+    // Form submit
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        welcomeBox.classList.add('d-none');
+        resultsBox.classList.add('d-none');
+        loaderBox.classList.remove('d-none');
+        
+        const formData = new FormData(form);
+        
+        fetch('/predict-fertilizer', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            loaderBox.classList.add('d-none');
+            if (data.error) {
+                welcomeBox.classList.remove('d-none');
+                alert("Prediction Error: " + data.error);
+            } else {
+                document.getElementById('result-fert-name').innerText = data.fertilizer_name;
+                document.getElementById('result-method').innerText = data.method;
+                document.getElementById('result-dosage').innerText = data.dosage;
+                document.getElementById('result-frequency').innerText = data.frequency;
+                document.getElementById('result-precautions').innerText = data.precautions;
+                
+                // Voice button binding
+                if (data.voice_url) {
+                    voiceBtn.onclick = function() {
+                        if (window.playAgriGuardVoice) {
+                            window.playAgriGuardVoice(data.voice_url);
+                        }
+                    };
+                    voiceBtn.classList.remove('disabled');
+                } else {
+                    voiceBtn.classList.add('disabled');
+                }
+                
+                // Recommended shops list
+                const productsList = document.getElementById('fert-products-list');
+                productsList.innerHTML = '';
+                data.products.forEach(p => {
+                    const col = document.createElement('div');
+                    col.className = 'col-sm-6';
+                    col.innerHTML = `
+                        <div class="card bg-light-translucent border-translucent p-2.5 d-flex flex-row align-items-center gap-3">
+                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; flex-shrink: 0;">
+                                <i class="fa-solid fa-cart-shopping fs-6"></i>
+                            </div>
+                            <div class="overflow-hidden flex-grow-1">
+                                <span class="fw-bold text-white text-truncate d-block small">${p.name}</span>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span class="text-success small fw-semibold">₹${p.price}</span>
+                                    <span class="text-warning small" style="font-size: 11px;"><i class="fa-solid fa-star"></i> ${p.rating}</span>
+                                </div>
+                            </div>
+                            <a href="${p.buy_url}" target="_blank" class="btn btn-success btn-xs px-2.5 py-1.5 rounded-pill" style="font-size: 11px;">Buy <i class="fa-solid fa-arrow-up-right-from-square ms-0.5"></i></a>
+                        </div>
+                    `;
+                    productsList.appendChild(col);
+                });
+                
+                resultsBox.classList.remove('d-none');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            loaderBox.classList.add('d-none');
+            welcomeBox.classList.remove('d-none');
+            alert("Connection error to AI prediction server.");
+        });
+    });
+});
+</script>
+{% endblock %}

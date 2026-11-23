@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - AgriGuard AI{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-white mb-1">Farmer Profile & Settings</h2>
+        <p class="text-secondary small">Manage personal details, language preferences, and configure custom API keys for real-time services</p>
+    </div>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="glass-card p-4 border-success">
+            
+            {% if message %}
+            <div class="alert alert-success-translucent border border-success-translucent text-success rounded p-3 mb-4 d-flex align-items-center">
+                <i class="fa-solid fa-circle-check me-2 fs-5 animate-pulse"></i>
+                <div>{{ message }}</div>
+            </div>
+            {% endif %}
+            
+            <form action="{{ url_for('profile') }}" method="POST">
+                
+                <!-- Account Info Section -->
+                <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-user-gear text-success me-2"></i> Personal Details</h5>
+                
+                <div class="row g-3 mb-4">
+                    <!-- Username (Disabled) -->
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-bold">Username</label>
+                        <input type="text" class="form-control bg-light-translucent border-translucent text-muted" value="{{ g.user.username }}" disabled>
+                    </div>
+                    <!-- Email (Disabled) -->
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-bold">Email Address</label>
+                        <input type="email" class="form-control bg-light-translucent border-translucent text-muted" value="{{ g.user.email }}" disabled>
+                    </div>
+                    <!-- Phone -->
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-bold">Phone Number</label>
+                        <input type="tel" name="phone" class="form-control bg-light-translucent border-translucent text-white" value="{{ g.user.phone or '' }}" required>
+                    </div>
+                    <!-- Farm Location -->
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-bold">Farm Location (City, State)</label>
+                        <input type="text" name="farm_location" class="form-control bg-light-translucent border-translucent text-white" value="{{ g.user.farm_location or '' }}">
+                    </div>
+                </div>
+                
+                <hr class="border-secondary opacity-10 my-4">
+                
+                <!-- Language Settings Section -->
+                <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-language text-success me-2"></i> Language Preferences</h5>
+                <p class="text-secondary small mb-3">All disease analysis, weather alerts, chatbot responses, and voice read-outs will be translated into your selected language.</p>
+                
+                <div class="mb-4 col-md-8">
+                    <label class="form-label text-secondary small fw-bold">Preferred Language</label>
+                    <select name="preferred_language" class="form-select bg-light-translucent border-translucent text-white" required>
+                        <option value="en" class="bg-dark" {% if g.user.preferred_language == 'en' %}selected{% endif %}>English</option>
+                        <option value="te" class="bg-dark" {% if g.user.preferred_language == 'te' %}selected{% endif %}>Telugu (తెలుగు)</option>
+                        <option value="hi" class="bg-dark" {% if g.user.preferred_language == 'hi' %}selected{% endif %}>Hindi (हिन्दी)</option>
+                        <option value="ta" class="bg-dark" {% if g.user.preferred_language == 'ta' %}selected{% endif %}>Tamil (தமிழ்)</option>
+                        <option value="kn" class="bg-dark" {% if g.user.preferred_language == 'kn' %}selected{% endif %}>Kannada (ಕನ್ನಡ)</option>
+                        <option value="ml" class="bg-dark" {% if g.user.preferred_language == 'ml' %}selected{% endif %}>Malayalam (മലയാളം)</option>
+                    </select>
+                </div>
+                
+                <hr class="border-secondary opacity-10 my-4">
+                
+                <!-- Custom API Keys Section -->
+                <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-key text-success me-2"></i> Custom API Integrations</h5>
+                <p class="text-secondary small mb-3">Enter your private developer API credentials to hook up real-time telemetry instead of system-level mock datasets.</p>
+                
+                <div class="row g-3 mb-4">
+                    <!-- OpenWeatherMap Key -->
+                    <div class="col-12">
+                        <label class="form-label text-secondary small fw-bold">OpenWeatherMap API Key</label>
+                        <input type="password" name="openweather_api_key" class="form-control bg-light-translucent border-translucent text-white" value="{{ openweather_key or '' }}" placeholder="Enter OpenWeatherMap API key (Optional)">
+                    </div>
+                    <!-- Gemini key -->
+                    <div class="col-12">
+                        <label class="form-label text-secondary small fw-bold">Google Gemini API Key</label>
+                        <input type="password" name="gemini_api_key" class="form-control bg-light-translucent border-translucent text-white" value="{{ gemini_key or '' }}" placeholder="Enter Google Gemini API key (Optional)">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success py-3 px-5 rounded-pill fw-semibold btn-glow-success w-100">
+                    Save Profile & Configurations <i class="fa-solid fa-floppy-disk ms-1"></i>
+                </button>
+                
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

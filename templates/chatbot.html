@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}AI Chatbot - AgriGuard AI{% endblock %}
+
+{% block content %}
+<div class="chatbot-layout-wrapper position-relative d-flex overflow-hidden" style="height: calc(100vh - 100px); margin: -2rem;">
+    
+    <!-- Main Chat Workspace -->
+    <div class="chat-main-container flex-grow-1 d-flex flex-column h-100 position-relative bg-app" style="min-width: 0;">
+        
+        <!-- Chat Area Top Header -->
+        <div class="chat-top-header d-flex justify-content-between align-items-center px-4 py-3 border-bottom border-translucent bg-card-translucent">
+            <div class="d-flex align-items-center gap-2">
+                <div class="header-bot-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                    <i class="fa-solid fa-robot animate-pulse"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-white mb-0 fs-6">AgriGuard Advisor</h5>
+                    <span class="badge bg-success-translucent text-success fs-xxs border border-success-translucent">JINJA2 + GEMINI POWERED</span>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <!-- Language Selector Dropdown -->
+                <div class="input-group input-group-sm rounded-pill border border-translucent overflow-hidden" style="width: 150px;">
+                    <span class="input-group-text bg-light-translucent border-0 text-secondary"><i class="fa-solid fa-language"></i></span>
+                    <select class="form-select bg-light-translucent border-0 text-white fs-xs" id="chat-lang-selector">
+                        <option value="en" class="bg-dark" {% if g.user.preferred_language == 'en' %}selected{% endif %}>English</option>
+                        <option value="te" class="bg-dark" {% if g.user.preferred_language == 'te' %}selected{% endif %}>Telugu (తెలుగు)</option>
+                        <option value="hi" class="bg-dark" {% if g.user.preferred_language == 'hi' %}selected{% endif %}>Hindi (हिन्दी)</option>
+                        <option value="ta" class="bg-dark" {% if g.user.preferred_language == 'ta' %}selected{% endif %}>Tamil (தமிழ்)</option>
+                        <option value="kn" class="bg-dark" {% if g.user.preferred_language == 'kn' %}selected{% endif %}>Kannada (ಕನ್ನಡ)</option>
+                        <option value="ml" class="bg-dark" {% if g.user.preferred_language == 'ml' %}selected{% endif %}>Malayalam (മലയാളം)</option>
+                    </select>
+                </div>
+                
+                <!-- Toggle right sidebar -->
+                <button class="btn btn-dark-translucent rounded-circle p-2 border-0" id="right-sidebar-toggle" title="Toggle Sidebar">
+                    <i class="fa-solid fa-sidebar fs-5"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Conversation Feed Area (Scrollable) -->
+        <div class="chat-viewport flex-grow-1 overflow-y-auto px-4 py-4 d-flex flex-column gap-4" id="chat-conversation-viewport">
+            
+            <!-- Welcome Splash (shown only when no active messages exist) -->
+            <div class="chat-welcome-splash text-center my-auto py-5 {% if chat_logs %}d-none{% endif %}" id="chat-empty-welcome">
+                <i class="fa-solid fa-seedling text-success display-1 animate-pulse mb-3"></i>
+                <h2 class="fw-extrabold text-white">How can I assist your farm today?</h2>
+                <p class="text-secondary max-width-500 mx-auto small">Ask me about plant leaf diseases, crop specific fertilizers, water guidelines, or chemical treatments. Speak or upload photos for instant AI advice.</p>
+            </div>
+            
+            <!-- Message Bubbles Container -->
+            <div class="messages-container d-flex flex-column gap-4">
+                {% if chat_logs %}
+                    {% for chat in chat_logs|reverse %}
+                    <!-- User bubble -->
+                    <div class="chat-message-row user-row d-flex justify-content-end align-items-start gap-3">
+                        <div class="message-bubble-wrapper d-flex flex-column align-items-end">
+                            <div class="chat-bubble user-bubble rounded-4 p-3 shadow-sm bg-success text-white">
+                                <div class="bubble-text">{{ chat.message }}</div>
+                            </div>
+                            <small class="text-muted fs-xxs mt-1">{{ chat.created_at.strftime('%I:%M %p') }}</small>
+                        </div>
+                        <div class="avatar bg-success-translucent text-success rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; flex-shrink:0;">
+                            {{ session.get('username', 'F')[0].upper() }}
+                        </div>
+                    </div>
+                    
+                    <!-- Bot bubble -->
+                    <div class="chat-message-row bot-row d-flex justify-content-start align-items-start gap-3">
+                        <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="message-bubble-wrapper d-flex flex-column align-items-start">
+                            <div class="chat-bubble bot-bubble rounded-4 p-3 shadow-sm bg-light-translucent border border-translucent text-white" style="max-width: 85%;">
+                                <div class="bubble-text">{{ chat.response|safe }}</div>
+                            </div>
+                            
+                            <!-- Bubble Utility Actions -->
+                            <div class="bubble-actions d-flex gap-2 mt-1.5 align-items-center">
+                                <small class="text-muted fs-xxs me-2">{{ chat.created_at.strftime('%I:%M %p') }}</small>
+                                <button class="btn btn-link p-0 text-muted btn-xs copy-response-btn" title="Copy Text"><i class="fa-regular fa-copy"></i></button>
+                                <button class="btn btn-link p-0 text-muted btn-xs like-response-btn" title="Like"><i class="fa-regular fa-thumbs-up"></i></button>
+                                <button class="btn btn-link p-0 text-muted btn-xs dislike-response-btn" title="Dislike"><i class="fa-regular fa-thumbs-down"></i></button>
+                                <button class="btn btn-link p-0 text-muted btn-xs regenerate-response-btn" title="Regenerate"><i class="fa-solid fa-rotate-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <!-- Live Weather Information Panel (Below the active message feed) -->
+            <div id="chatbot-weather-panel" class="weather-panel-card glass-card p-4 border-success mt-4 d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-translucent pb-3">
+                    <h5 class="fw-bold text-white mb-0">
+                        <i class="fa-solid fa-cloud-sun text-warning me-2 animate-pulse"></i> Integrated Weather Telemetry
+                    </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="chat-weather-city" class="text-success fw-bold">Detecting GPS...</span>
+                        <span id="chat-weather-time" class="badge bg-light-translucent text-secondary fs-xxs"></span>
+                    </div>
+                </div>
+                
+                <!-- Weather Grid Cards -->
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-6 col-md-3">
+                        <div class="bg-light-translucent border border-translucent rounded p-2.5 h-100">
+                            <span class="text-muted fs-xs d-block mb-1">Temperature</span>
+                            <div class="d-flex align-items-center justify-content-center gap-1.5">
+                                <i class="fa-solid fa-temperature-high text-warning"></i>
+                                <span class="fw-extrabold text-white fs-5" id="chat-weather-temp">--</span>
+                            </div>
+                            <small class="text-muted fs-xxs" id="chat-weather-condition">--</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="bg-light-translucent border border-translucent rounded p-2.5 h-100">
+                            <span class="text-muted fs-xs d-block mb-1">Humidity</span>
+                            <div class="d-flex align-items-center justify-content-center gap-1.5">
+                                <i class="fa-solid fa-droplet text-info"></i>
+                                <span class="fw-extrabold text-white fs-5" id="chat-weather-humidity">--</span>
+                            </div>
+                            <small class="text-muted fs-xxs">Air Moisture</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="bg-light-translucent border border-translucent rounded p-2.5 h-100">
+                            <span class="text-muted fs-xs d-block mb-1">UV Rating</span>
+                            <div class="d-flex align-items-center justify-content-center gap-1.5">
+                                <i class="fa-solid fa-circle-radiation text-danger"></i>
+                                <span class="fw-extrabold text-white fs-5" id="chat-weather-uv">--</span>
+                            </div>
+                            <small class="text-muted fs-xxs">Ultraviolet Index</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="bg-light-translucent border border-translucent rounded p-2.5 h-100">
+                            <span class="text-muted fs-xs d-block mb-1">Wind Telemetry</span>
+                            <div class="d-flex align-items-center justify-content-center gap-1.5">
+                                <i class="fa-solid fa-wind text-success"></i>
+                                <span class="fw-extrabold text-white fs-5" id="chat-weather-wind">--</span>
+                            </div>
+                            <small class="text-muted fs-xxs">Speed</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 7-Day weather columns -->
+                <h6 class="text-white fw-bold mb-2">7-Day Climate Outlook</h6>
+                <div class="row g-2 text-center mb-4" id="chat-weather-forecast-row">
+                    <!-- Loaded dynamically -->
+                </div>
+                
+                <!-- AI weather advisory card -->
+                <div class="weather-advisory-alert border border-success border-solid rounded p-3 bg-success bg-opacity-10">
+                    <div class="d-flex justify-content-between align-items-center mb-2.5">
+                        <span class="fw-bold text-success"><i class="fa-solid fa-shield-virus me-1 animate-pulse"></i> AI Crop Disease Risk Alert</span>
+                        <button type="button" class="btn btn-outline-success btn-xs px-2.5 py-1 rounded-pill" id="chat-weather-audio-btn">
+                            <i class="fa-solid fa-volume-high me-1"></i> Speak Advisory
+                        </button>
+                    </div>
+                    <ul class="list-group list-group-flush" id="chat-weather-advisory-list">
+                        <!-- Loaded dynamically -->
+                    </ul>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Bottom Floating Chat Input Area -->
+        <div class="chat-input-sticky-footer py-4 px-4 bg-gradient">
+            <div class="chat-input-inner-wrapper max-width-800 mx-auto">
+                
+                <!-- Quick action shortcut buttons -->
+                <div class="chat-shortcuts-scroller d-flex gap-2 overflow-x-auto pb-2 mb-3 no-scrollbar justify-content-center">
+                    <button type="button" class="btn btn-dark-translucent rounded-pill btn-sm text-nowrap px-3 py-1.5" data-query="Identify crop disease from my uploaded leaf image.">🌾 Detect Disease</button>
+                    <button type="button" class="btn btn-dark-translucent rounded-pill btn-sm text-nowrap px-3 py-1.5" id="weather-panel-shortcut" data-query="Analyze today's weather and predict disease risk.">🌤 Weather</button>
+                    <button type="button" class="btn btn-dark-translucent rounded-pill btn-sm text-nowrap px-3 py-1.5" data-query="Predict the best fertilizer based on soil NPK moisture.">🧪 Fertilizer</button>
+                    <button type="button" class="btn btn-dark-translucent rounded-pill btn-sm text-nowrap px-3 py-1.5" data-query="Explain details of Tomato Early Blight symptoms and treatments.">🦠 Disease Guide</button>
+                    <button type="button" class="btn btn-dark-translucent rounded-pill btn-sm text-nowrap px-3 py-1.5" data-query="What are the best bio fertilizers and where can I buy them?">🛒 Buy Products</button>
+                    <button type="button" class="btn btn-dark-translucent rounded-pill btn-sm text-nowrap px-3 py-1.5" data-query="Find nearby seed shops and government agriculture centers.">📍 Nearby Shops</button>
+                    <button type="button" class="btn btn-dark-translucent rounded-pill btn-sm text-nowrap px-3 py-1.5" id="voice-chat-shortcut"><i class="fa-solid fa-microphone text-success animate-pulse me-1"></i> Voice Chat</button>
+                </div>
+                
+                <!-- Camera Viewfinder overlay if active -->
+                <div class="chat-camera-panel d-none bg-dark rounded border border-translucent p-2 mb-3 position-relative" style="height: 200px; max-width: 320px;">
+                    <video id="chat-video-preview" class="w-100 h-100 object-fit-cover rounded" autoplay playsinline></video>
+                    <button type="button" class="btn btn-success btn-sm position-absolute bottom-0 start-50 translate-middle-x mb-2" id="chat-camera-snap-btn"><i class="fa-solid fa-camera"></i> Take Snapshot</button>
+                    <button type="button" class="btn-close btn-close-white btn-sm position-absolute top-0 end-0 m-2" id="chat-camera-close-btn"></button>
+                </div>
+                
+                <!-- Main input row bar -->
+                <div class="chat-input-bar bg-card-translucent border border-translucent rounded-4 p-2 shadow-lg">
+                    <form id="chat-main-form" class="d-flex align-items-center gap-2">
+                        
+                        <!-- Input Attachment controls -->
+                        <div class="input-actions-left d-flex gap-1.5">
+                            <!-- Image upload trigger -->
+                            <label class="btn btn-dark-translucent rounded-circle p-2.5 border-0 mb-0 d-flex align-items-center justify-content-center" for="chat-image-upload" title="Upload Leaf Image" style="width: 42px; height: 42px; cursor: pointer;">
+                                <i class="fa-solid fa-paperclip text-success fs-5"></i>
+                            </label>
+                            <input type="file" id="chat-image-upload" class="d-none" accept="image/*">
+                            
+                            <!-- Webcam Capture trigger -->
+                            <button type="button" class="btn btn-dark-translucent rounded-circle p-2.5 border-0 d-flex align-items-center justify-content-center" id="chat-camera-trigger" title="Capture Image" style="width: 42px; height: 42px;">
+                                <i class="fa-solid fa-camera text-success fs-5"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Large Text input field -->
+                        <textarea class="form-control bg-transparent border-0 text-white shadow-none py-2" id="chat-main-text-input" rows="1" placeholder="Ask anything about your crops..." style="resize: none; font-size: 0.95rem; line-height: 1.4; max-height: 120px;"></textarea>
+                        
+                        <!-- Voice Mic recording & send triggers -->
+                        <div class="input-actions-right d-flex gap-1.5 align-items-center">
+                            <!-- Listening soundwave indicator -->
+                            <div id="chat-voice-listen-indicator" class="voice-wave d-none me-2">
+                                <span class="bar" style="background-color: var(--danger);"></span>
+                                <span class="bar" style="background-color: var(--danger);"></span>
+                                <span class="bar" style="background-color: var(--danger);"></span>
+                            </div>
+                            
+                            <button type="button" class="btn btn-dark-translucent rounded-circle p-2.5 border-0 d-flex align-items-center justify-content-center" id="chat-mic-trigger" title="Speak to AgriGuard" style="width: 42px; height: 42px;">
+                                <i class="fa-solid fa-microphone text-success fs-5"></i>
+                            </button>
+                            
+                            <button type="submit" class="btn btn-success rounded-circle p-2.5 border-0 d-flex align-items-center justify-content-center btn-glow-success" id="chat-send-trigger" title="Send" style="width: 42px; height: 42px;">
+                                <i class="fa-solid fa-paper-plane text-white"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Uploaded image preview tag -->
+                <div id="chat-image-preview-badge" class="badge bg-success text-white mt-2 d-none text-truncate py-2 px-3 border border-success-translucent rounded-pill max-width-300">
+                    <i class="fa-solid fa-image me-1"></i> <span id="chat-image-preview-name">leaf.jpg</span>
+                    <button type="button" class="btn-close btn-close-white btn-xs ms-2 float-end" id="chat-image-preview-clear"></button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Collapsible Right Sidebar Navigation -->
+    <aside class="chat-right-sidebar border-start border-translucent bg-card-translucent d-flex flex-column h-100 active-sidebar" id="chatbot-right-sidebar" style="width: 320px; transition: transform var(--transition-speed) ease; flex-shrink:0; z-index: 10;">
+        <div class="sidebar-header d-flex justify-content-between align-items-center px-3 py-3 border-bottom border-translucent">
+            <h6 class="fw-bold text-white mb-0 fs-6"><i class="fa-solid fa-clock-rotate-left text-success me-1"></i> History & settings</h6>
+            <button class="btn-close btn-close-white btn-sm d-lg-none" id="right-sidebar-close"></button>
+        </div>
+        
+        <div class="p-3 border-bottom border-translucent">
+            <button type="button" class="btn btn-success w-100 py-2.5 rounded-pill fw-semibold btn-glow-success" id="btn-new-chat">
+                <i class="fa-solid fa-plus me-1"></i> New Conversation
+            </button>
+        </div>
+        
+        <!-- Accordion panels containing Settings, Reports, Scans and Weather logs -->
+        <div class="sidebar-accordion flex-grow-1 overflow-y-auto p-3 d-flex flex-column gap-2" id="sidebar-accordion-wrapper">
+            
+            <!-- 1. Settings tab -->
+            <div class="accordion-item-glass rounded border border-translucent overflow-hidden">
+                <button class="accordion-header-btn w-100 text-start px-3 py-2.5 bg-light-translucent text-white fw-bold d-flex justify-content-between align-items-center" data-target="#collapse-settings">
+                    <span><i class="fa-solid fa-sliders text-success me-2"></i> Voice & Theme Settings</span>
+                    <i class="fa-solid fa-chevron-down fs-xs transition-arrow"></i>
+                </button>
+                <div id="collapse-settings" class="accordion-content-panel p-3 bg-light-translucent d-flex flex-column gap-3">
+                    <!-- Dark mode toggle -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="text-secondary small fw-semibold">App Theme Mode</label>
+                        <button type="button" class="btn btn-outline-success btn-xs" id="settings-theme-toggle">Toggle Theme</button>
+                    </div>
+                    
+                    <!-- Voice TTS Gender selection -->
+                    <div>
+                        <label class="text-secondary small fw-bold d-block mb-1">Voice Gender (Synthesis)</label>
+                        <select class="form-select form-select-sm bg-dark border-translucent text-white text-uppercase" id="settings-voice-gender">
+                            <option value="female">Female (Standard)</option>
+                            <option value="male">Male (Alternate)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Voice speed slider -->
+                    <div>
+                        <label class="text-secondary small fw-bold d-block mb-1">Voice Speed: <span id="settings-speed-val" class="text-success">1.0x</span></label>
+                        <input type="range" class="form-range accent-success" min="0.5" max="2.0" step="0.1" value="1.0" id="settings-voice-speed">
+                    </div>
+                    
+                    <!-- Notifications toggle -->
+                    <div class="form-check form-switch mt-1">
+                        <input class="form-check-input bg-light-translucent" type="checkbox" id="settings-notifications-switch" checked>
+                        <label class="form-check-label text-secondary small" for="settings-notifications-switch">Enable Alerts Notifications</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2. Disease Scans logs -->
+            <div class="accordion-item-glass rounded border border-translucent overflow-hidden">
+                <button class="accordion-header-btn w-100 text-start px-3 py-2.5 bg-light-translucent text-white fw-bold d-flex justify-content-between align-items-center" data-target="#collapse-scans">
+                    <span><i class="fa-solid fa-seedling text-success me-2"></i> Previous Scans Log</span>
+                    <i class="fa-solid fa-chevron-down fs-xs transition-arrow"></i>
+                </button>
+                <div id="collapse-scans" class="accordion-content-panel p-2 d-none max-height-200 overflow-y-auto">
+                    {% if scan_logs %}
+                        {% for scan in scan_logs %}
+                        <a href="{{ url_for('prediction_report', prediction_id=scan.id) }}" target="_blank" class="list-group-item bg-light-translucent border border-translucent p-2 rounded mb-1.5 d-flex align-items-center justify-content-between text-decoration-none">
+                            <div class="overflow-hidden flex-grow-1">
+                                <span class="fw-bold text-white d-block small text-truncate">{{ scan.disease_name }}</span>
+                                <small class="text-muted d-block fs-xxs">{{ scan.created_at.strftime('%d-%b-%y, %I:%M %p') }}</small>
+                            </div>
+                            <span class="badge {% if 'Healthy' in scan.disease_name %}bg-success{% else %}bg-danger{% endif %} fs-xxs">{{ scan.severity.split(' ')[0] }}</span>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4 text-muted small">No scans logged.</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 3. Weather logs -->
+            <div class="accordion-item-glass rounded border border-translucent overflow-hidden">
+                <button class="accordion-header-btn w-100 text-start px-3 py-2.5 bg-light-translucent text-white fw-bold d-flex justify-content-between align-items-center" data-target="#collapse-weather">
+                    <span><i class="fa-solid fa-cloud-sun text-success me-2"></i> Weather Advisories History</span>
+                    <i class="fa-solid fa-chevron-down fs-xs transition-arrow"></i>
+                </button>
+                <div id="collapse-weather" class="accordion-content-panel p-2 d-none max-height-200 overflow-y-auto">
+                    {% if fert_logs %}
+                        {% for fert in fert_logs %}
+                        <div class="bg-light-translucent border border-translucent p-2 rounded mb-1.5">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-success small">{{ fert.crop_type }} ({{ fert.soil_type }})</span>
+                                <small class="text-muted fs-xxs">{{ fert.created_at.strftime('%d-%b') }}</small>
+                            </div>
+                            <small class="text-white d-block fs-xs">Rec: {{ fert.recommended_fertilizer }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4 text-muted small">No fertilizer advisories logged.</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+        </div>
+    </aside>
+    
+</div>
+
+<!-- Embedded Canvas audio player support -->
+<canvas id="chat-canvas" class="d-none"></canvas>
+
+<!-- Custom scripts for ChatGPT interface -->
+<script src="/static/js/chatbot.js"></script>
+{% endblock %}

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AgriGuard AI - Crop Disease Detection & Multilingual Voice Advisory{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/style.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-bg">
+
+    <!-- Sidebar & Top Navbar Structure -->
+    <div class="app-container">
+        
+        {% if session.get('user_id') %}
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar border-end border-translucent">
+            <div class="sidebar-header d-flex align-items-center px-4 py-3">
+                <div class="logo-icon me-2">
+                    <i class="fa-solid fa-leaf text-success fs-4 animate-pulse"></i>
+                </div>
+                <div class="logo-text">
+                    <span class="fw-bold text-white fs-5">AgriGuard</span>
+                    <span class="text-success fw-bold">AI</span>
+                </div>
+            </div>
+            
+            <hr class="mx-3 my-2 border-secondary opacity-25">
+            
+            <nav class="sidebar-nav px-3 py-2 flex-grow-1">
+                <ul class="nav flex-column gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                            <i class="fa-solid fa-chart-pie me-2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('chatbot_page') %}active{% endif %}" href="{{ url_for('chatbot_page') }}">
+                            <i class="fa-solid fa-robot me-2"></i> AI Chatbot
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('disease_detection') %}active{% endif %}" href="{{ url_for('disease_detection') }}">
+                            <i class="fa-solid fa-microscope me-2"></i> Disease Detector
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('fertilizer_recommender') %}active{% endif %}" href="{{ url_for('fertilizer_recommender') }}">
+                            <i class="fa-solid fa-flask me-2"></i> Fertilizer Advisor
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('nearby_shops') %}active{% endif %}" href="{{ url_for('nearby_shops') }}">
+                            <i class="fa-solid fa-map-location-dot me-2"></i> Nearby Stores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('profile') %}active{% endif %}" href="{{ url_for('profile') }}">
+                            <i class="fa-solid fa-sliders me-2"></i> Profile & API Settings
+                        </a>
+                    </li>
+                    {% if session.get('is_admin') %}
+                    <li class="nav-item mt-3">
+                        <small class="text-muted text-uppercase fw-bold px-3 d-block mb-1 fs-xs">Administration</small>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('admin') %}active{% endif %}" href="{{ url_for('admin') }}">
+                            <i class="fa-solid fa-shield-halved me-2"></i> Admin Panel
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer p-3 mt-auto">
+                <div class="user-pill d-flex align-items-center gap-2 p-2 rounded bg-light-translucent mb-2">
+                    <div class="user-avatar rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold">
+                        {{ session.get('username', 'F')[0].upper() }}
+                    </div>
+                    <div class="user-info overflow-hidden">
+                        <div class="user-name text-white text-truncate fw-semibold">{{ session.get('username') }}</div>
+                        <small class="user-role text-muted text-truncate d-block">{% if session.get('is_admin') %}Administrator{% else %}Farmer{% endif %}</small>
+                    </div>
+                </div>
+                <a class="btn btn-outline-danger btn-sm w-100" href="{{ url_for('logout') }}">
+                    <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Logout
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+        
+        <!-- Main Content Area -->
+        <div class="main-viewport flex-grow-1 d-flex flex-column">
+            
+            <!-- Navbar Header -->
+            <header class="app-header navbar navbar-expand-lg px-4 py-2 border-bottom border-translucent justify-content-between">
+                {% if not session.get('user_id') %}
+                <!-- Public Logo -->
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                    <i class="fa-solid fa-leaf text-success fs-4 me-2"></i>
+                    <span class="fw-bold text-white fs-4">AgriGuard</span>
+                    <span class="text-success fw-bold fs-4">AI</span>
+                </a>
+                {% else %}
+                <button class="btn btn-dark-translucent d-lg-none me-2" type="button" id="sidebar-toggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="header-welcome text-white d-none d-sm-block">
+                    <span class="text-muted">Welcome back,</span> <span class="fw-semibold">{{ session.get('username') }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="header-actions d-flex align-items-center gap-3">
+                    <!-- Theme Toggle -->
+                    <button class="btn btn-dark-translucent rounded-circle p-2 border-0" id="theme-toggle" title="Toggle Light/Dark Mode">
+                        <i class="fa-solid fa-moon text-warning fs-5"></i>
+                    </button>
+                    
+                    {% if not session.get('user_id') %}
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-success btn-sm px-3 rounded-pill fw-semibold">Login</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-success btn-sm px-3 rounded-pill fw-semibold">Register</a>
+                    </div>
+                    {% else %}
+                    <!-- Quick Language Indicator -->
+                    <div class="language-badge badge bg-success-translucent text-success border border-success-translucent px-2 py-1.5 rounded-pill">
+                        <i class="fa-solid fa-language me-1"></i> <span id="current-language-display">{{ g.user.preferred_language.upper() }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </header>
+            
+            <!-- Main Content Block -->
+            <main class="content-body flex-grow-1 p-4 overflow-y-auto">
+                {% block content %}{% endblock %}
+            </main>
+            
+            <footer class="app-footer text-center py-3 border-top border-translucent bg-card-translucent mt-auto">
+                <small class="text-muted">© 2026 AgriGuard AI Project. All rights reserved. B.Tech AI & Data Science.</small>
+            </footer>
+        </div>
+        
+    </div>
+
+    <!-- Floating Chat Assistant Widget (if logged in and not on chatbot page) -->
+    {% if session.get('user_id') and request.path != url_for('chatbot_page') %}
+    <div class="chat-widget-container" id="chat-assistant-widget">
+        <button class="chat-widget-toggle btn btn-success rounded-circle shadow-lg d-flex align-items-center justify-content-center" id="chat-widget-toggle-btn">
+            <i class="fa-solid fa-robot fs-4"></i>
+            <span class="pulse-ring"></span>
+        </button>
+        <div class="chat-widget-box card border-translucent shadow-lg d-none">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-2.5">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-robot animate-pulse"></i>
+                    <div>
+                        <span class="fw-semibold d-block lh-sm fs-6">AgriGuard Voice AI</span>
+                        <small class="text-light-subtle d-block fs-xs">Online Advisory</small>
+                    </div>
+                </div>
+                <button class="btn-close btn-close-white btn-sm" id="chat-widget-close"></button>
+            </div>
+            <div class="card-body p-3 chat-messages-container" id="chat-widget-messages">
+                <div class="chat-bubble bot-bubble">
+                    <div class="bubble-content">
+                        Hello! I am your AgriGuard voice assistant. You can speak or type in your language. How can I help you today?
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Voice Wave Animation -->
+            <div class="voice-wave-container d-none px-3 py-2 text-center" id="voice-wave-panel">
+                <div class="voice-wave">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+                <small class="text-success text-center d-block mt-1">Listening...</small>
+            </div>
+            
+            <div class="card-footer p-2 bg-light-translucent">
+                <form id="chat-widget-form" class="input-group">
+                    <button class="btn btn-outline-success" type="button" id="chat-widget-mic" title="Speak">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <!-- Hidden input to upload images directly in chat -->
+                    <label class="btn btn-outline-success mb-0 d-flex align-items-center justify-content-center" for="chat-widget-image" title="Upload Leaf Image">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                    <input type="file" id="chat-widget-image" class="d-none" accept="image/*">
+                    <input type="text" id="chat-widget-input" class="form-control" placeholder="Ask a question..." autocomplete="off">
+                    <button class="btn btn-success" type="submit" id="chat-widget-send">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+                <!-- File name preview badge -->
+                <div id="chat-image-preview-badge" class="badge bg-success text-white mt-1 d-none text-truncate w-100 py-1.5">
+                    <i class="fa-solid fa-image me-1"></i> <span id="chat-image-preview-name">image.jpg</span>
+                    <button type="button" class="btn-close btn-close-white btn-xs ms-2 float-end" id="clear-chat-image"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Global Web Audio Player -->
+    <audio id="global-audio-player" class="d-none"></audio>
+
+    <!-- Core Javascript utilities -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

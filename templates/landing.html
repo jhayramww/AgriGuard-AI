@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}AgriGuard AI - Real-Time Crop Disease Detection & Multilingual Voice Advisory{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <!-- Hero Section -->
+    <div class="row align-items-center justify-content-between g-5 py-5">
+        <div class="col-lg-6">
+            <h1 class="display-3 fw-extrabold text-white lh-sm mb-3">
+                Guard Your Crops with <span class="text-success text-gradient">AI intelligence</span>
+            </h1>
+            <p class="lead text-secondary mb-4 fs-4">
+                AgriGuard AI provides real-time leaf disease diagnosis, localized weather intelligence, soil-based fertilizer recommendations, and interactive voice-based advisory in your native language.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-success btn-lg px-4 py-3 rounded-pill fw-semibold btn-glow-success">
+                    Go to Dashboard <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-success btn-lg px-4 py-3 rounded-pill fw-semibold btn-glow-success">
+                    Get Started Free <i class="fa-solid fa-user-plus ms-2"></i>
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4 py-3 rounded-pill fw-semibold">
+                    Access Account
+                </a>
+                {% endif %}
+            </div>
+            <div class="mt-5 d-flex gap-4 align-items-center">
+                <div class="stat-pill border-end border-translucent pe-4">
+                    <h3 class="fw-bold text-white mb-0">98.2%</h3>
+                    <small class="text-muted">CNN Model Accuracy</small>
+                </div>
+                <div class="stat-pill border-end border-translucent pe-4">
+                    <h3 class="fw-bold text-white mb-0">6+</h3>
+                    <small class="text-muted">Indian Languages</small>
+                </div>
+                <div class="stat-pill">
+                    <h3 class="fw-bold text-white mb-0">Instant</h3>
+                    <small class="text-muted">Voice Advisory</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-5">
+            <!-- Glassmorphism Visual Card -->
+            <div class="glass-card p-4 text-center border-success relative">
+                <div class="position-absolute top-0 end-0 m-3 badge bg-success-translucent text-success rounded-pill px-3 py-1.5 fs-xs border border-success-translucent fw-bold">
+                    <i class="fa-solid fa-circle-check animate-pulse me-1"></i> ACTIVE MONITORING
+                </div>
+                
+                <div class="circle-graphic my-4">
+                    <i class="fa-solid fa-leaf text-success fs-1 animate-spin-slow" style="font-size: 80px !important;"></i>
+                </div>
+                
+                <h3 class="fw-bold text-white mb-2">Real-Time Scanner</h3>
+                <p class="text-muted mb-4 px-3">
+                    Upload an image or point your camera at leaf spots. The AI will output severity, symptoms, and spray times instantly.
+                </p>
+                
+                <div class="scanner-simulation border border-secondary border-dashed p-3 rounded bg-light-translucent mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-secondary fw-semibold">Analyzing Tomato Leaf...</small>
+                        <span class="badge bg-danger">Early Blight (94%)</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" style="width: 94%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="border-secondary opacity-10 my-5">
+    
+    <!-- Platform Features -->
+    <div class="row g-4 py-5 justify-content-center text-center">
+        <div class="col-12 mb-4">
+            <h2 class="fw-bold text-white display-5">State-of-the-Art Core Features</h2>
+            <p class="text-secondary lead max-width-600 mx-auto">AgriGuard AI combines computer vision, weather telemetry, and generative advisory in one simple app.</p>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100">
+                <div class="icon-box bg-success-translucent text-success rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fa-solid fa-microscope fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-2">CNN Disease Scanner</h4>
+                <p class="text-muted fs-6">Detects Tomato, Potato, Rice and Corn leaf diseases using deep learning, with recommendations for chemical/organic pesticide treatments.</p>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100">
+                <div class="icon-box bg-success-translucent text-success rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fa-solid fa-language fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-2">Multilingual Speech AI</h4>
+                <p class="text-muted fs-6">Full support for English, Telugu, Hindi, Tamil, Kannada, and Malayalam. Ask queries verbally and listen to audio advisories.</p>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100">
+                <div class="icon-box bg-success-translucent text-success rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fa-solid fa-cloud-sun-rain fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-2">Weather Intelligence</h4>
+                <p class="text-muted fs-6">Automatic GPS geocoding to display humidity, rainfall, and wind speeds, alongside alerts on crop disease risks and pesticide spray times.</p>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mt-4">
+            <div class="glass-card p-4 h-100">
+                <div class="icon-box bg-success-translucent text-success rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fa-solid fa-flask fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-2">Fertilizer Predictor</h4>
+                <p class="text-muted fs-6">Predicts the best fertilizer based on Nitrogen, Phosphorus, Potassium, soil moisture, and temperature, trained on our dataset.</p>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mt-4">
+            <div class="glass-card p-4 h-100">
+                <div class="icon-box bg-success-translucent text-success rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fa-solid fa-cart-shopping fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-2">Ecommerce & Maps</h4>
+                <p class="text-muted fs-6">Instant links to buy treatments on BigHaat, AgroStar, and Amazon, plus Google Maps navigation to nearby local seed/fertilizer dealers.</p>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mt-4">
+            <div class="glass-card p-4 h-100">
+                <div class="icon-box bg-success-translucent text-success rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fa-solid fa-folder-open fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-2">Farmer Dashboard</h4>
+                <p class="text-muted fs-6">Maintains comprehensive history logs of crop scans, NPK predictions, chat advisories, offline print PDF reports, and feedback logs.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="glass-card p-5 my-5 text-center bg-gradient border-success">
+        <h2 class="fw-bold text-white mb-3">Protect Your Harvest Today</h2>
+        <p class="text-secondary max-width-600 mx-auto mb-4 fs-5">Join thousands of farmers using real-time AI advisory to optimize yield, control pests, and lower expenses.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('register') }}" class="btn btn-success btn-lg px-4 py-3 rounded-pill fw-semibold btn-glow-success">Register Free Account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

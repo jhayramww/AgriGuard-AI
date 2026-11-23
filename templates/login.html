@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Login - AgriGuard AI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center py-5" style="min-height: 80vh;">
+    <div class="col-md-5">
+        <div class="glass-card p-4 border-success">
+            
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-leaf text-success fs-1 animate-pulse mb-2"></i>
+                <h2 class="fw-bold text-white mb-1">Welcome Back</h2>
+                <p class="text-muted small">Log in to manage your farm profile and crop scans</p>
+            </div>
+            
+            {% if error %}
+            <div class="alert alert-danger-translucent border border-danger-translucent text-danger rounded p-3 mb-3 d-flex align-items-center">
+                <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
+                <div>{{ error }}</div>
+            </div>
+            {% endif %}
+            
+            <form action="{{ url_for('login') }}" method="POST">
+                
+                <div class="form-floating mb-3">
+                    <input type="text" name="username_or_email" class="form-control bg-light-translucent border-translucent text-white" id="usernameInput" placeholder="username" required>
+                    <label for="usernameInput" class="text-secondary">Username or Email</label>
+                </div>
+                
+                <div class="form-floating mb-3 position-relative">
+                    <input type="password" name="password" class="form-control bg-light-translucent border-translucent text-white" id="passwordInput" placeholder="Password" required>
+                    <label for="passwordInput" class="text-secondary">Password</label>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input bg-light-translucent" type="checkbox" id="rememberMe">
+                        <label class="form-check-label text-secondary small" for="rememberMe">
+                            Remember me
+                        </label>
+                    </div>
+                    <a href="{{ url_for('forgot_password') }}" class="text-success small fw-semibold text-decoration-none">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-success w-100 py-3 rounded-pill fw-semibold btn-glow-success mb-3">
+                    Log In <i class="fa-solid fa-right-to-bracket ms-1"></i>
+                </button>
+                
+            </form>
+            
+            <div class="text-center">
+                <span class="text-secondary small">Don't have an account?</span> 
+                <a href="{{ url_for('register') }}" class="text-success fw-bold small text-decoration-none ms-1">Register Here</a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
